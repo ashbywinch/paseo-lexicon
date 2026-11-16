@@ -4,7 +4,7 @@ SHELL := /bin/bash
 NODE := node
 NPM := npm
 
-.PHONY: help setup deps tools lint lint-check typecheck test coverage format clean check secret-set
+.PHONY: help install setup deps tools lint lint-check typecheck test coverage format clean check secret-set
 
 # Tooling runs from the project's own venv with a pinned interpreter: the system Python is irrelevant.
 UV ?= uv
@@ -18,7 +18,8 @@ SECRET_VALUE_VAR ?= CLOUDFLARE_AIGATEWAY_TOKEN
 
 help:
 	@echo "paseo-lexicon"
-	@echo "  make setup      install dependencies"
+	@echo "  make install    everything in one shot: deps, .env, hooks, tools venv"
+	@echo "  make setup      dependencies only"
 	@echo "  make lint       report lint findings"
 	@echo "  make typecheck  tsc --noEmit"
 	@echo "  make test       typecheck + tests (the gate)"
@@ -27,6 +28,10 @@ help:
 	@echo "  make check      lint + typecheck, what pre-push runs"
 	@echo "  make secret-set set $(SECRET) on $(REPO) from \$$$(SECRET_VALUE_VAR)"
 	@echo "  make clean      remove node_modules, coverage, build residue"
+
+# One shot for a fresh clone. `secret-set` stays separate: it needs an ambient token.
+install: setup tools
+	@echo "Installed. Next: make test, or make secret-set when CLOUDFLARE_AIGATEWAY_TOKEN is set."
 
 setup: deps
 
