@@ -1,0 +1,36 @@
+{
+  "name": "paseo-lexicon",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Reports the active repository to the transcription shim so dictation knows its vocabulary.",
+  "files": [
+    "paseo-plugin.json",
+    "OVERVIEW.md",
+    "index.server.ts",
+    "server/"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "lint:check": "eslint . --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage",
+    "format": "prettier --write .",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@getpaseo/plugin": "0.15.4",
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^2.1.8",
+    "eslint": "^9.15.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.15.0",
+    "vitest": "^2.1.8",
+    "zod": "^4.4.3"
+  },
+  "type": "module",
+  "dependencies": {
+    "husky": "^9.1.7"
+  }
+}

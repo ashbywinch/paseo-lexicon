@@ -1,0 +1,322 @@
+# Documentation Standard — what good documentation is
+
+Standards for documentation quality — what good documentation looks like.
+Separate from `docs/documentation-structure.md` (which mandates what docs
+must exist and their folder structure). The `skill://write-documentation`
+skill is the process that applies both.
+
+## Skills are documentation
+
+A skill (`skills/<name>/SKILL.md`) is documentation: it is a doc written
+for the agent that loads it, and it is subject to every rule in this
+standard — context efficiency, density, no-duplication, one topic per file
+(a skill covers one task or procedure; a second task means a second skill),
+the quality checklist, and the always-loaded size ceilings (a skill body is
+loaded in full when used, so the 150–200 line / 32 KiB targets apply to it
+directly). The review bot checks skill changes against this standard like
+any other doc.
+
+## Skills and standards come in pairs
+
+A skill that produces an artefact — a document, a task, an epic — has a standards
+document saying what that artefact must be. The skill walks the procedure; the
+standard states the result, so a reader can check it without asking the author.
+
+A standard never says how it is checked. That is the reviewer's job, and it
+changes without the standard changing.
+
+## Context efficiency
+
+Every documentation file contains only information relevant to its topic
+and audience. Each doc has a single topic and a single audience. Content
+that belongs to a different audience or topic goes in that doc, linked —
+never copied in.
+
+All documentation must be usable by humans or by AI agents; both navigate
+from the entry point of AGENTS.md. Skills are exempt from the reachability
+rule — a harness discovers them through its own mechanism (rationale and
+scope in docs/documentation-structure.md).
+
+## Project-specific content lives in the project
+
+The conventions repo's `skills/` hold **reusable procedures** — a task an
+agent performs in any repository. Content that applies to one project only
+(that repo's endpoints, batch IDs, layout details, app-specific commands)
+belongs in that project's own docs, linked from there — never in a
+conventions-repo skill. A skill written for one app is a project-specific
+skill: split the generic procedure (which stays in the conventions repo,
+as its own skill) from the project specifics (which move to the project's
+repo).
+
+## AGENTS.md is a bootloader, not an operating system
+
+AGENTS.md loads everything else and gets out of the way. It holds the quick
+start, the decision tree that routes every task to the right doc, and the
+rules that apply to **every** agent in the repo — nothing more. Content that
+only some agents need belongs in the doc the tree links to, never in
+AGENTS.md itself. Test: is this genuinely relevant to 100% of agents
+working in this repo? If not, it does not belong in the bootloader.
+
+## Rules are expensive context — put knowledge in skills
+
+Every repo loads a rule (`rules/*.md`) into every agent's context, every
+session, whether or not the task touches it. A rule therefore taxes every
+prompt. Put knowledge in a **skill** (`skills/<name>/SKILL.md`). The agent loads
+a skill only when a task matches its description, so the agent that needs it
+gets it and every other agent pays nothing.
+
+Write a rule only when it applies to **every** session regardless of task:
+universal discipline (test-first, fail-fast) and session invariants. Put
+task-shaped content in a skill, keyed by a description that routes the right
+task to it — "when deploying", "when touching the scraper", "when reviewing a
+user interface change".
+
+**A task-shaped rule is a finding.** Ask of any new rule: would an agent doing
+unrelated work pay for this content? If yes, move it to a skill and link it.
+
+## Single source of truth — never duplicate
+
+Each piece of information — whether documentation or code — lives in exactly
+one place. Other docs link to it; they do not repeat it. A duplicated fact is
+a finding: the copies drift, and the reader cannot tell which is current.
+
+**Do not duplicate the code's job.** A doc that restates a function signature,
+a default value, or a class structure is waste — the code is the source of
+truth for those. Reference the code instead ("call `compute()`; see the
+function docstring for the `Attempt` contract").
+
+**A summary of behaviour is the same duplication.** A sentence describing what
+a check verifies, what a command does or what a script writes is a second copy
+of that code — and it is the copy that goes stale, because prose is not edited
+when the code changes. State what to run and link to it. A description of
+*purpose* — the one stable reason a thing exists — is not a summary and does
+not rot.
+
+When tempted to copy content into a second doc, link instead — the link is
+the duplication-free way to reuse.
+
+**Good:** the development guide says "See the column reference for
+details" and links to column-reference.md.
+
+**Bad:** the development guide repeats the column layout inline — two
+copies, one of which will go stale.
+
+**Config snippets are code, not prose.** A block a tool would parse — a
+workflow, a `.toml`/`.json`/`.yaml` snippet, an env-var table with literal
+values — lives in a real `examples/` file (for skills:
+`skill://<name>/examples/`), referenced by link, never inlined in a doc or
+skill body. A real file is parsed, linted, and exercised like the shipped
+artifact; an inline copy is not, and it drifts when the canonical copy
+changes. If the file does not exist yet, create it — the doc references the
+artifact, not a paraphrase of it.
+
+**Good:** the gateway skill says "the working block lives in the sample:
+`skill://new-repo-scaffold/examples/.pr_agent.toml` (the `[litellm]`
+section)" — one copy, tooling-checked.
+
+**Bad:** the same skill pastes `extra_headers = '{...}'` inline — a second,
+unchecked copy that silently diverges (observed: the inline copy had a 5
+minute timeout and no metadata while the sample had 10 minutes, metadata,
+and backoff).
+
+## One topic per file — the docs' separation of concerns
+
+One reason to change per doc file, exactly as one reason to change per
+module (docs/coding-standards.md 'Separation of concerns'): each doc
+covers one topic for one audience. A doc with two audiences or two
+unrelated topics is a finding — split it and link. A subtopic for a
+different audience is a separate file that links back. The question
+before writing or editing: "what single question does this doc answer?" —
+a second question means a second file.
+
+## Avoid redundancy
+
+Before adding content to a doc, check whether it already exists elsewhere.
+If it does, link to it. If it does not, put it in the most logical place
+and link from the other docs.
+
+## Delete, don't archive
+
+Obsolete content is a liability. When something is no longer accurate,
+delete it. Don't rename it "legacy", don't add a deprecation notice. If
+it's wrong, remove it.
+
+## Docs must match the code
+
+When you rename a function, module, or tab, update the docs in the same
+commit. Outdated docs are noise. Not every feature needs its own doc — a
+well-named function with a clear signature and a readable implementation
+is often its own best documentation. If the code is easy to read and the
+interface helps users get it right, a separate doc may be redundant.
+
+## Prefer automated tests and readable code over documentation
+
+Where possible, write an automated test that proves the behaviour instead
+of a doc that describes it. Prefer interfaces that make it easy to get right
+(intuitive names, strict types, sensible defaults) over documenting how to
+use them. The test is a living doc that fails when it lies; a written doc
+stays green when it goes stale.
+
+## Reasons, not history
+
+Write what is true now, and give the reason when the reader could not work it out
+themselves: "Set the timeout to 30s, because a cold start can take 20s."
+
+Never write how it came to be — what changed, who decided, what failed before,
+when it happened. And never justify a rule whose reason is plain: "Do not copy a
+value into an unrelated field" needs no because-clause.
+
+✗ "The timeout was raised from 5s to 30s after the March outage."
+
+✓ "Set the timeout to 30s, because a cold start can take 20s and the shorter
+wait reports a failure that has not happened."
+
+## API keys never go in docs
+
+API keys, passwords, and secrets never appear in documentation or `.env`
+files. They live in the shell environment only.
+
+## Density & concision
+
+Docs are read inside a limited AI context window; every sentence costs
+context. Write for density: the smallest set of words that preserves every
+fact and decision.
+
+- **Rules as explicit negatives.** "Never X" reads faster and is followed
+  more reliably than "be careful about X". (For instructions an agent must
+  *act on* — a skill, a rule, a task prompt — see `skill://prompt-craft`.)
+- **Commands over prose.** `make test` beats "run the test suite to verify
+  everything works".
+- **Write each rule so a reader can act on it**: an imperative ("search the
+  record before creating a row") or a normative statement ("a row must always
+  name exactly one file"). A sentence that only reports what happens — "two rows
+  for one file split the record" — leaves the reader to infer the rule, so give
+  it as the reason if it earns a reason. A metaphor cannot be acted on.
+- **Tables over prose.** A rule per row beats a paragraph per rule, when a
+  fact has consistent fields.
+- **Canonical ✗/✓ examples over exhaustive enumeration.** One right/wrong
+  pair teaches more than a list of edge cases; never enumerate every
+  failure mode, show the pattern.
+- **One-line contracts.** `compute()` MUST return an `Attempt` — prefer one
+  line over three sentences.
+- **Decision-relevant context only.** Keep only background that changes a
+  decision; cut filler, restated motivation, and restated rules.
+- **Size ceilings.** Always-loaded files (AGENTS.md, CLAUDE.md, skill
+  bodies) target ~150–200 lines / <32 KiB — loaded in full every session,
+  so bloat is paid every session. Referenced docs can be longer, but
+  densify prose first.
+- **Link, don't paste.** A fact lives in exactly one place; other docs link
+  to it. References one level deep — a doc points to another doc, not
+  through a chain.
+- **Code in code files, not inline in docs.** A doc that contains a
+  multi-line code block (config file, script, workflow) should move that
+  code to a separate file and reference it. Inline snippets for
+  illustration are fine (one-liners, key flags). Full config files and
+  runnable scripts belong in `examples/` or `scripts/` directories, not
+  in the doc body. Agents read the referenced files when they need them;
+  the doc stays dense and doesn't duplicate the code's job.
+- **Never reference machine-specific paths.** Docs must not contain paths
+  that resolve only on the author's machine (`/home/<user>/…`,
+  `~/Documents/…`, absolute user-folder paths). They break for every other
+  reader and leak the author's home layout. Use repo-relative paths
+  (`tools/foo.sh`) or a generic convention (`~/.local/bin/foo`) when the
+  location is a convention, not a user folder.
+- **Runnable code stays runnable.** A script or sample a doc references
+  must exist in the repo at a resolvable path the reader can run from
+  their checkout, and should be exercised by CI so it doesn't rot. Never
+  document a runtime fetch-and-pipe of code from a remote URL (unpinned,
+  unverified, breaks when the source moves); if remote fetching is
+  unavoidable, pin a ref or checksum.
+- **Task-shaped sections.** When a doc describes how to do something, use
+  the task-card shape: goal (one verb), scope (exact paths), constraints
+  (must / never), acceptance (verifiable command).
+## Clarity rules
+
+Write each sentence as one of two kinds: facts about the software, or
+commands about what the reader does. Do not mix a fact and a command in
+one sentence.
+
+Why: readers use a doc right before acting. A sentence they must re-read
+costs time and can cause the wrong action.
+
+Give each kind its own sentence. Write "`cache.py` reads `cache.toml`
+at startup" as the fact. Write "edit that file, then run `cache gc`" as
+the command.
+
+Write each section by these rules:
+
+- **State the rule, not the steps.** Write "every block carries its task ID",
+  not "add the task ID when you create the block" — the steps belong in the
+  skill.
+- **Put the main point first.** Write the fact or the instruction in the
+  first sentence. Write the reasons after it.
+- **Name the heading after what the section gives the reader.** Do not use
+  "Overview", "Details", or "Misc": they do not say what the section holds.
+- **Write one idea per sentence.** Write each idea in its own sentence.
+- **Write in the active voice.** Write "`backup.py` writes `data.db`",
+  not "`data.db` is written by `backup.py`".
+- **Make every noun knowable.** Write each noun so the reader can tell,
+  with the context they already have, which thing it refers to. Name the
+  thing when the reader knows it. When they cannot know it, define or
+  describe it, or link to where it is defined.
+- **Define terms at first use.** Explain each term in plain words where it
+  first appears, house jargon included, or link to the external documentation
+  that defines it — a product page, an API reference, a standard. A reader who
+  has not met the word must be able to act on it. Use one name for one thing
+  throughout.
+- **Use concrete words.** Write "the `data.db` lock blocks the write",
+  not "write protection is enabled".
+- **Use the simplest word.** Write "start" not "initiate"; write "end" not
+  "terminate".
+- **Cut words that add no information.** Write "to" not "in order to";
+  write "now" not "at this point in time".
+- Keep sentences under 30 words.
+- Do not start a sentence with "There is" or "There are".
+- Do not use weasel words: enable, leverage, robust, seamless, transparent.
+
+Write each section so it gives the reader one of:
+- a command to run, or a file to edit or open
+- a rule ("Never X")
+- a value to set, or a name to use
+- an acceptance check
+- a fact about the code that reading it would not tell you
+- a link to a document that answers the question
+
+Canonical pairs:
+
+✗ "The service blocks writes."
+
+✓ "The `data.db` lock blocks writes at 23:00. To flush old entries, run
+`cache gc`."
+
+✗ "The scheduler checks the backups using the copy process."
+
+✓ "`backup.py copy` starts at 23:00. It copies the day's `data.db` to
+`backups/` and verifies the copy's size against the original."
+
+## The documentation-quality checklist
+
+- [ ] Single, clearly stated audience
+- [ ] Single, clearly stated topic
+- [ ] No content that belongs to a different doc
+- [ ] No duplicated content from other docs (link instead)
+- [ ] Every section is relevant to the stated audience
+- [ ] Title and first paragraph make the purpose clear
+- [ ] Links to related docs where readers might need them
+- [ ] Every sentence carries a fact, a decision, or a constraint
+- [ ] Rules are explicit negatives ("Never X"), not vague preferences
+- [ ] Commands replace descriptions where executable
+- [ ] Tables replace paragraphs where fields are consistent
+- [ ] Code shows a canonical ✗/✓ pair, not exhaustive cases
+- [ ] Facts and instructions are separate: facts describe the software, commands tell the reader what to do
+- [ ] Every rule is written as a command ("put", "name", "write", "do not")
+- [ ] Every noun's referent is knowable to the reader: name it, define or describe it, or link to its definition
+- [ ] The section's first sentence states the answer
+- [ ] The heading names what the section gives the reader
+- [ ] Each sentence says one thing, in the active voice
+- [ ] Every term is defined in plain words at first use, or links to the external documentation that defines it
+- [ ] No sentence over 30 words
+- [ ] No sentence starts with "There is" or "There are"
+- [ ] No weasel words (enable, leverage, robust, seamless, transparent)
+- [ ] No history lessons: no account of what changed, who decided, or what failed before
+- [ ] Always-loaded files within the ~150–200 line ceiling

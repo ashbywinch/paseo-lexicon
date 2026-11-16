@@ -1,0 +1,18 @@
+# deps
+node_modules/
+# build + coverage
+dist/
+coverage/
+# env and secrets
+.env
+.env.local
+# caches
+.vitest/
+*.log
+# agent and editor state
+.opencode/
+.code-review-graph/
+.sisyphus/
+.vscode/
+.idea/
+.DS_Store

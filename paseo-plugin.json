@@ -1,0 +1,6 @@
+{
+  "id": "paseo-lexicon",
+  "name": "Paseo lexicon",
+  "description": "Reports the active repository to the transcription shim so dictation knows its vocabulary.",
+  "requirements": { "paseo": ">=0.15.0" }
+}
