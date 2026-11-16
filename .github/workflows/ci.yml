@@ -24,7 +24,7 @@ jobs:
       # Every step is a make target: the pipeline decides nothing the Makefile does not, and
       # `make install` is the same command a fresh clone runs — including the toolchain bootstrap.
       - run: make install
-      - run: make lint-github
+      - run: make lint-check
       - run: make test
       - run: make coverage
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

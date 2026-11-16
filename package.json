@@ -16,8 +16,7 @@
     "test": "vitest run",
     "coverage": "vitest run --coverage",
     "format": "prettier --write .",
-    "prepare": "husky",
-    "lint:github": "eslint . --format github"
+    "prepare": "husky"
   },
   "devDependencies": {
     "@getpaseo/plugin": "0.15.4",

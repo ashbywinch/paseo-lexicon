@@ -4,7 +4,7 @@ SHELL := /bin/bash
 NODE := node
 NPM := npm
 
-.PHONY: help install setup deps tools install-hooks lint lint-check lint-github typecheck test coverage format merge-markers clean check secret-set
+.PHONY: help install setup deps tools install-hooks lint lint-check typecheck test coverage format merge-markers clean check secret-set
 
 # Tooling runs from the project's own venv with a pinned interpreter: the system Python is irrelevant.
 UV ?= uv
@@ -46,10 +46,6 @@ lint:
 
 lint-check: deps
 	$(NPM) run lint:check
-
-# CI only: findings surface as PR annotations.
-lint-github: deps
-	$(NPM) run lint:github
 
 typecheck: deps
 	$(NPM) run typecheck
