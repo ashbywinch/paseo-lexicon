@@ -9,6 +9,7 @@ NPM := npm
 # Tooling runs from the project's own venv with a pinned interpreter: the system Python is irrelevant.
 UV ?= uv
 PYTHON_VERSION ?= 3.14
+TOOLS_BIN ?= .tools/bin
 TOOLS_VENV ?= .tools/venv
 TOOLS_PYTHON := $(TOOLS_VENV)/bin/python
 
@@ -59,9 +60,11 @@ format:
 
 # Repo operations: a venv with a pinned interpreter, provisioned here rather than borrowed from the
 # system. Idempotent — an existing venv with the right version is reused.
+# uv itself is bootstrapped into .tools/bin when absent, so CI needs no extra install step.
 tools:
-	@test -x $(TOOLS_PYTHON) || $(UV) venv --python $(PYTHON_VERSION) $(TOOLS_VENV)
-	@$(UV) pip install --quiet --python $(TOOLS_PYTHON) pynacl
+	@command -v $(UV) >/dev/null 2>&1 || (mkdir -p $(TOOLS_BIN) && curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=$(TOOLS_BIN) sh)
+	@test -x $(TOOLS_PYTHON) || (command -v $(UV) >/dev/null 2>&1 && $(UV) venv --python $(PYTHON_VERSION) $(TOOLS_VENV) || $(TOOLS_BIN)/uv venv --python $(PYTHON_VERSION) $(TOOLS_VENV))
+	@command -v $(UV) >/dev/null 2>&1 && $(UV) pip install --quiet --python $(TOOLS_PYTHON) pynacl || $(TOOLS_BIN)/uv pip install --quiet --python $(TOOLS_PYTHON) pynacl
 
 secret-set: tools
 	@$(TOOLS_PYTHON) tools/set_secret.py "$(REPO)" "$(SECRET)" "$(SECRET_VALUE_VAR)"
