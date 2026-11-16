@@ -4,7 +4,7 @@ SHELL := /bin/bash
 NODE := node
 NPM := npm
 
-.PHONY: help install setup deps tools lint lint-check typecheck test coverage format clean check secret-set
+.PHONY: help install setup deps tools install-hooks lint lint-check lint-github typecheck test coverage format merge-markers clean check secret-set
 
 # Tooling runs from the project's own venv with a pinned interpreter: the system Python is irrelevant.
 UV ?= uv
@@ -28,13 +28,14 @@ help:
 	@echo "  make format     rewrite formatting in place"
 	@echo "  make check      lint + typecheck, what pre-push runs"
 	@echo "  make secret-set set $(SECRET) on $(REPO) from \$$$(SECRET_VALUE_VAR)"
+	@echo "  make merge-markers  fail on a committed conflict marker"
 	@echo "  make clean      remove node_modules, coverage, build residue"
 
 # One shot for a fresh clone. `secret-set` stays separate: it needs an ambient token.
 install: setup tools
 	@echo "Installed. Next: make test, or make secret-set when CLOUDFLARE_AIGATEWAY_TOKEN is set."
 
-setup: deps
+setup: deps install-hooks
 
 deps:
 	$(NPM) install
@@ -43,13 +44,24 @@ deps:
 lint:
 	$(NPM) run lint
 
-lint-check:
+lint-check: deps
 	$(NPM) run lint:check
 
-typecheck:
+# CI only: findings surface as PR annotations.
+lint-github: deps
+	$(NPM) run lint:github
+
+typecheck: deps
 	$(NPM) run typecheck
 
-test: typecheck
+merge-markers: deps
+	@tools/check-merge-markers.sh
+
+install-hooks: deps
+	@npx husky >/dev/null 2>&1 || true
+	@git config core.hooksPath >/dev/null 2>&1 || { echo "husky did not set core.hooksPath"; exit 1; }
+
+test: check
 	$(NPM) run test
 
 coverage:
@@ -73,4 +85,4 @@ clean:
 	rm -rf node_modules coverage .vitest dist .tools
 
 # The single gate CI and the pre-push hook both run: no drift between them.
-check: lint-check typecheck
+check: deps lint-check typecheck merge-markers
