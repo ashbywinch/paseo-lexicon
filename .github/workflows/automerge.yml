@@ -1,0 +1,30 @@
+name: Auto-merge
+
+# The arming logic lives once, in omp-config's reusable workflow. This caller only supplies the
+# events and the App credentials.
+#
+# Gated by branch protection, not by this workflow: one approving review, the CI check, and every
+# review conversation resolved. This workflow only sets the auto-merge flag and refreshes branches
+# that fell behind; it never approves and never merges directly.
+on:
+  pull_request:
+  pull_request_review:
+    types: [submitted]
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  automerge:
+    uses: ashbywinch/omp-config/.github/workflows/pr-automerge.yml@v0.2.7
+    permissions:
+      contents: read
+    with:
+      app_id: ${{ vars.OMP_APP_ID }}
+    secrets:
+      app_private_key: ${{ secrets.OMP_APP_PRIVATE_KEY }}
