@@ -47,13 +47,17 @@ def api(path: str, data: dict | None = None, method: str | None = None) -> dict:
     if body is not None:
         request.add_header("Content-Type", "application/json")
     try:
-        with urllib.request.urlopen(request) as response:
+        # A hung endpoint must not hang the release path: 20s is generous for one API call.
+        with urllib.request.urlopen(request, timeout=20) as response:
             body = response.read()
             # A secret PUT answers 201 with no body; nothing to parse.
             return json.loads(body) if body else {}
     except urllib.error.HTTPError as error:
         detail = error.read().decode()[:200]
         raise SystemExit(f"{request.get_method()} {path} failed: {error.code} {detail}") from error
+    except urllib.error.URLError as error:
+        # DNS failure, refused connection, timeout: no status code to report.
+        raise SystemExit(f"{request.get_method()} {path} unreachable: {error.reason}") from error
 
 
 def main(argv: list[str]) -> int:
