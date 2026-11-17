@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   automerge:
-    uses: ashbywinch/omp-config/.github/workflows/pr-automerge.yml@v0.2.7
+    uses: ashbywinch/omp-config/.github/workflows/pr-automerge.yml@v0.2.12
     permissions:
       contents: read
     with:
