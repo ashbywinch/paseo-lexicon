@@ -67,6 +67,9 @@ commitable_code_suggestions = true  # inline mode: the summarized table comment 
 
 [github_action_config]
 handle_push_trigger = true
+# Every commit in this house is authored by the bot identity, so the default (true) means the
+# action logs "Skipping synchronize: bot commit detected" and never reviews a pushed branch.
+push_trigger_ignore_bot_commits = false
 push_commands = ["/review", "/improve"]
 # A human posting "/skip" on the PR skips the AI review for that PR
 # (the check-review step passes on it). Deliberate opt-out only — the

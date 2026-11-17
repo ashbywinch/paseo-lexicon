@@ -1,6 +1,6 @@
 # AI Code Review (the-pr-agent) — the house review bot.
 #
-# CHANGE: `<PROJECT>_API_KEY` -> your repo secret name. The secret value is
+# CHANGE: `PASEO_LEXICON_API_KEY` -> the Cloudflare AI Gateway token. The secret value is
 # the Cloudflare AI Gateway token (same for all projects). Set it BEFORE
 # the first PR — the job fails fast without it. For forkers: use your own
 # provider's API key and update api_base / model in .pr_agent.toml.
@@ -62,8 +62,8 @@ jobs:
         env:
           # Cloudflare AI Gateway: routes OpenCode -> DeepSeek fallback.
           # For forkers: set your own OPENAI_KEY and OPENAI_BASE_URL.
-          OPENAI_KEY: ${{ secrets.<PROJECT>_API_KEY }}
-          OPENAI_BASE_URL: https://gateway.ai.cloudflare.com/v1/{ACCOUNT_ID}/{GATEWAY}/compat
+          OPENAI_KEY: ${{ secrets.PASEO_LEXICON_API_KEY }}
+          OPENAI_BASE_URL: https://gateway.ai.cloudflare.com/v1/e21a5be58ac1e8f7d5619539feb2dc3d/default/compat
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_AGENT_CONFIG_BRANCH: pr-agent-config
 

@@ -1,5 +1,7 @@
 # deps
 node_modules/
+# local toolchain
+.tools/
 # build + coverage
 dist/
 coverage/

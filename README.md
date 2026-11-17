@@ -15,6 +15,17 @@ make test      # typecheck + tests
 make check     # what the pre-push hook runs
 ```
 
+## Repo operations
+
+```bash
+make tools       # the project's own venv, pinned interpreter, PyNaCl inside it
+make secret-set  # set PASEO_LEXICON_API_KEY from CLOUDFLARE_AIGATEWAY_TOKEN
+```
+
+Tooling never comes from the system interpreter: `make tools` creates `.tools/venv` with a pinned
+Python and installs into it. `.tools/` is gitignored, so `make clean` removes it and `make tools`
+rebuilds it.
+
 ## What it does
 
 One hook, `agent.turn.before`, posts `repo` and `path` to the shim's `/_tag` endpoint. It runs as a

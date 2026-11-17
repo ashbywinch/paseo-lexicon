@@ -21,8 +21,9 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      # Every step is a make target: the pipeline decides nothing the Makefile does not.
-      - run: make setup
+      # Every step is a make target: the pipeline decides nothing the Makefile does not, and
+      # `make install` is the same command a fresh clone runs — including the toolchain bootstrap.
+      - run: make install
       - run: make lint-check
       - run: make test
       - run: make coverage
