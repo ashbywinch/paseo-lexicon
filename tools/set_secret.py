@@ -15,7 +15,7 @@ from __future__ import annotations
 import base64
 import json
 import os
-import re
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -24,26 +24,14 @@ from nacl import encoding, public
 
 
 def gh_token() -> str | None:
+    """GITHUB_TOKEN when set, else whatever the gh CLI already holds."""
     if token := os.environ.get("GITHUB_TOKEN"):
         return token
-    hosts = os.path.expanduser("~/.config/gh/hosts.yml")
-    try:
-        with open(hosts, encoding="utf-8") as handle:
-            lines = handle.read().splitlines()
-    except OSError:
-        return None
-    # hosts.yml holds one block per host; take the token under github.com, not the first host's.
-    for index, line in enumerate(lines):
-        if line.strip() != "github.com:":
-            continue
-        for entry in lines[index + 1 :]:
-            if entry and not entry[0].isspace():
-                break
-            match = re.match(r"\s*oauth_token:\s*(\S+)", entry)
-            if match:
-                return match.group(1).replace('"', "")
-        break
-    return None
+    # Ask gh rather than parse its hosts.yml: the file is YAML with comments, quoting and several
+    # hosts, and every home-grown reader of it has been wrong once.
+    result = subprocess.run(["gh", "auth", "token"], capture_output=True, text=True, check=False)
+    token = result.stdout.strip()
+    return token or None
 
 
 def api(path: str, data: dict | None = None, method: str | None = None) -> dict:
