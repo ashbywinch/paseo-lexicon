@@ -8,9 +8,7 @@ applies. Read this, then follow the link for the task.
 - `make setup` — install dependencies and create `.env` from `.env.example`
 - `make test` — typecheck then tests; the gate
 - `make check` — lint and typecheck, what the pre-push hook runs
-- `make tools` — provisions the project's venv with a pinned Python
-- Use the venv's interpreter, never the system one.
-- Run every dev action through `make`, never ad-hoc `npx`.
+- Never construct ad-hoc `npx` commands; everything goes through `make`.
 
 ## Where things live
 
