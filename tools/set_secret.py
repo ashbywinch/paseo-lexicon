@@ -29,10 +29,21 @@ def gh_token() -> str | None:
     hosts = os.path.expanduser("~/.config/gh/hosts.yml")
     try:
         with open(hosts, encoding="utf-8") as handle:
-            match = re.search(r"^\s*oauth_token:\s*(\S+)", handle.read(), re.MULTILINE)
+            lines = handle.read().splitlines()
     except OSError:
         return None
-    return match.group(1).replace('"', "") if match else None
+    # hosts.yml holds one block per host; take the token under github.com, not the first host's.
+    for index, line in enumerate(lines):
+        if line.strip() != "github.com:":
+            continue
+        for entry in lines[index + 1 :]:
+            if entry and not entry[0].isspace():
+                break
+            match = re.match(r"\s*oauth_token:\s*(\S+)", entry)
+            if match:
+                return match.group(1).replace('"', "")
+        break
+    return None
 
 
 def api(path: str, data: dict | None = None, method: str | None = None) -> dict:

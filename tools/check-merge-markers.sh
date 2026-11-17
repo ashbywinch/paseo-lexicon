@@ -9,7 +9,11 @@ root=${1:-$(git rev-parse --show-toplevel)}
 opened=$(git -C "$root" grep -IlE '^(<<<<<<< )' -- . || true)
 offenders=$opened
 if [ -n "$opened" ]; then
-    offenders=$(printf '%s\n' "$opened" | xargs -r git -C "$root" grep -lE '^(=======$|>>>>>>> )' -- 2>/dev/null || true)
+    # A while-read loop, not `xargs -r`: that flag is a GNU extension and absent on macOS.
+    offenders=$(printf '%s\n' "$opened" | while IFS= read -r file; do
+        [ -n "$file" ] || continue
+        git -C "$root" grep -qE '^(=======$|>>>>>>> )' -- "$file" 2>/dev/null && printf '%s\n' "$file"
+    done)
     [ -n "$offenders" ] || offenders=$opened
 fi
 if [ -n "$offenders" ]; then
